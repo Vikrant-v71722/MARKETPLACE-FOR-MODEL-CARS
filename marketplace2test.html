@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miniature Model Cars Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-card: #3a3a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent: #ff6b35;
+            --accent-hover: #ff8555;
+            --border: #4a4a4a;
+            --success: #4caf50;
+            --error: #f44336;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --accent: #ff6b35;
+            --accent-hover: #ff8555;
+            --border: #e0e0e0;
+            --success: #4caf50;
+            --error: #f44336;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-secondary);
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .modal-content h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .modal-content p, .modal-content ul {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .modal-content ul {
+            margin-left: 20px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            gap: 10px;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-container label {
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        /* Header */
+        header {
+            background-color: var(--bg-secondary);
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            color: var(--accent);
+            font-size: 24px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Buttons */
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        button:disabled {
+            background-color: var(--border);
+            cursor: not-allowed;
+        }
+
+        .theme-toggle {
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--border);
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* Admin Section */
+        .admin-section {
+            background-color: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .admin-section h2 {
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .image-preview {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .image-preview img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 2px solid var(--border);
+        }
+
+        /* Cars Grid */
+        .cars-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .car-card {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .car-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .car-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            background-color: var(--bg-card);
+        }
+
+        .car-details {
+            padding: 20px;
+        }
+
+        .car-details h3 {
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .car-details p {
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .price-section {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: var(--bg-card);
+            border-radius: 6px;
+        }
+
+        .current-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        .bid-count {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .bid-section {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .bid-section input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .bid-section button {
+            padding: 10px 20px;
+        }
+
+        .bid-history {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+        }
+
+        .bid-history h4 {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .bid-item {
+            padding: 8px;
+            background-color: var(--bg-card);
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .delete-btn {
+            background-color: var(--error);
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .delete-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .no-cars {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .user-info {
+            background-color: var(--bg-card);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .user-info strong {
+            color: var(--accent);
+        }
+
+        .logout-btn {
+            background-color: var(--error);
+            padding: 8px 15px;
+            font-size: 13px;
+        }
+
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .bid-timer {
+            background-color: var(--accent);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .bid-timer.expired {
+            background-color: var(--error);
+        }
+
+        .winner-section {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: var(--success);
+            color: white;
+            border-radius: 6px;
+        }
+
+        .winner-section h4 {
+            margin-bottom: 8px;
+        }
+
+        .bidder-info {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .bidder-info p {
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .cars-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Terms Modal -->
+    <div id="termsModal" class="modal active">
+        <div class="modal-content">
+            <h2>Terms and Conditions</h2>
+            <p><strong>Effective Date:</strong> May 12, 2026</p>
+
+            <h3>1. Acceptance of Terms</h3>
+            <p>By accessing and using this Miniature Model Cars Marketplace, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions. If you do not agree to these terms, you may not use this website.</p>
+
+            <h3>2. Delivery Management</h3>
+            <p>All delivery arrangements, including shipping methods, timelines, and costs, shall be managed exclusively by the seller. The seller reserves the right to determine the most appropriate delivery service for each transaction.</p>
+
+            <h3>3. No Returns, Refunds, or Exchanges</h3>
+            <p>All sales are final. We maintain a strict no return, no refund, and no exchange policy. Please carefully review all product descriptions, images, and pricing before placing a bid or completing a purchase.</p>
+
+            <h3>4. Limitation of Liability</h3>
+            <p>The seller shall not be held responsible for any fraudulent activities, scams, or deceptive practices that may occur in connection with transactions on this platform. While we may provide assistance in addressing such issues, users engage in transactions at their own risk.</p>
+
+            <h3>5. User Responsibilities</h3>
+            <ul>
+                <li>Users are responsible for verifying the authenticity and condition of items before bidding</li>
+                <li>Users must provide accurate contact and payment information</li>
+                <li>Users agree to honor their bids and complete transactions in good faith</li>
+            </ul>
+
+            <h3>6. Bidding Terms</h3>
+            <p>All bids are binding. The minimum bid increment is ₹1 (One Rupee). By placing a bid, you enter into a legally binding agreement to purchase the item if you are the highest bidder.</p>
+
+            <h3>7. Disclaimer</h3>
+            <p>This website and all products are provided "as is" without warranties of any kind, either express or implied. We do not guarantee the accuracy, completeness, or reliability of any product descriptions or images.</p>
+
+            <h3>8. Modifications</h3>
+            <p>We reserve the right to modify these Terms and Conditions at any time without prior notice. Continued use of the website after changes constitutes acceptance of the modified terms.</p>
+
+            <div class="checkbox-container">
+                <input type="checkbox" id="acceptTerms">
+                <label for="acceptTerms">I have read and agree to the Terms and Conditions</label>
+            </div>
+
+            <button id="proceedBtn" disabled>Proceed to Marketplace</button>
+        </div>
+    </div>
+
+    <!-- Main Website -->
+    <header>
+        <div class="header-content">
+            <h1>🏎️ Miniature Model Cars Marketplace</h1>
+            <div class="header-controls">
+                <div class="user-info" id="userDisplay" style="display: none;"></div>
+                <button class="theme-toggle" id="themeToggle">☀️ Light Mode</button>
+                <button id="toggleAdmin">Add New Car</button>
+                <button class="logout-btn" id="logoutBtn" style="display: none;">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Admin Section -->
+        <section class="admin-section" id="adminSection" style="display: none;">
+            <h2>Add New Model Car</h2>
+            <form id="addCarForm">
+                <div class="form-group">
+                    <label for="carName">Car Name *</label>
+                    <input type="text" id="carName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="carDescription">Description *</label>
+                    <textarea id="carDescription" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="startingPrice">Starting Price (₹) *</label>
+                    <input type="number" id="startingPrice" min="1" value="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="bidDuration">Bid Active Duration (Hours) *</label>
+                    <input type="number" id="bidDuration" min="1" value="24" required>
+                    <small style="color: var(--text-secondary); display: block; margin-top: 5px;">How many hours should this bid remain active?</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="carImages">Upload Images *</label>
+                    <input type="file" id="carImages" accept="image/*" multiple required>
+                    <div class="image-preview" id="imagePreview"></div>
+                </div>
+
+                <button type="submit">Add Car to Marketplace</button>
+            </form>
+        </section>
+
+        <!-- Cars Display Section -->
+        <section>
+            <div class="cars-grid" id="carsGrid">
+                <div class="no-cars">No cars listed yet. Add your first miniature car!</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h2>Login / Register</h2>
+            <p>Please login to access the marketplace</p>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="userName">Your Name *</label>
+                    <input type="text" id="userName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="userCountry">Select Country *</label>
+                    <select id="userCountry" required>
+                        <option value="">-- Select Country --</option>
+                        <option value="India">India</option>
+                        <option value="USA">USA</option>
+                        <option value="UK">UK</option>
+                        <option value="Canada">Canada</option>
+                        <option value="Australia">Australia</option>
+                        <option value="Germany">Germany</option>
+                        <option value="France">France</option>
+                        <option value="Japan">Japan</option>
+                        <option value="China">China</option>
+                        <option value="Brazil">Brazil</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="userContact">Email or Mobile Number *</label>
+                    <input type="text" id="userContact" placeholder="example@email.com or +91-1234567890" required>
+                </div>
+
+                <button type="submit">Login to Marketplace</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Check if terms are accepted
+        const termsAccepted = localStorage.getItem('termsAccepted');
+        const termsModal = document.getElementById('termsModal');
+        const loginModal = document.getElementById('loginModal');
+        const acceptTermsCheckbox = document.getElementById('acceptTerms');
+        const proceedBtn = document.getElementById('proceedBtn');
+        const loginForm = document.getElementById('loginForm');
+
+        // Check login status
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+        if (termsAccepted === 'true') {
+            termsModal.classList.remove('active');
+            if (!currentUser) {
+                loginModal.classList.add('active');
+            }
+        }
+
+        acceptTermsCheckbox.addEventListener('change', function() {
+            proceedBtn.disabled = !this.checked;
+        });
+
+        proceedBtn.addEventListener('click', function() {
+            localStorage.setItem('termsAccepted', 'true');
+            termsModal.classList.remove('active');
+            if (!currentUser) {
+                loginModal.classList.add('active');
+            }
+        });
+
+        // Login Form
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            currentUser = {
+                name: document.getElementById('userName').value,
+                country: document.getElementById('userCountry').value,
+                contact: document.getElementById('userContact').value,
+                loginTime: new Date().toISOString()
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            loginModal.classList.remove('active');
+            updateUserDisplay();
+        });
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        updateThemeButton(currentTheme);
+
+        themeToggle.addEventListener('click', function() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            const newTheme = theme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton(newTheme);
+        });
+
+        function updateThemeButton(theme) {
+            themeToggle.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+
+        // User Display and Logout
+        function updateUserDisplay() {
+            const userDisplay = document.getElementById('userDisplay');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            if (currentUser) {
+                userDisplay.innerHTML = `<strong>${currentUser.name}</strong> (${currentUser.country})`;
+                userDisplay.style.display = 'block';
+                logoutBtn.style.display = 'block';
+            }
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                location.reload();
+            }
+        });
+
+        // Admin Section Toggle
+        const toggleAdminBtn = document.getElementById('toggleAdmin');
+        const adminSection = document.getElementById('adminSection');
+        let adminVisible = false;
+
+        toggleAdminBtn.addEventListener('click', function() {
+            adminVisible = !adminVisible;
+            adminSection.style.display = adminVisible ? 'block' : 'none';
+            this.textContent = adminVisible ? 'Close Form' : 'Add New Car';
+        });
+
+        // Initialize user display
+        updateUserDisplay();
+
+        // Image Preview
+        const carImagesInput = document.getElementById('carImages');
+        const imagePreview = document.getElementById('imagePreview');
+        let selectedImages = [];
+
+        carImagesInput.addEventListener('change', function() {
+            imagePreview.innerHTML = '';
+            selectedImages = [];
+
+            Array.from(this.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    imagePreview.appendChild(img);
+                    selectedImages.push(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // Cars Data
+        let cars = JSON.parse(localStorage.getItem('miniatureCars')) || [];
+
+        // Add Car Form
+        const addCarForm = document.getElementById('addCarForm');
+        addCarForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const bidDurationHours = parseInt(document.getElementById('bidDuration').value);
+            const endTime = new Date();
+            endTime.setHours(endTime.getHours() + bidDurationHours);
+
+            const newCar = {
+                id: Date.now(),
+                name: document.getElementById('carName').value,
+                description: document.getElementById('carDescription').value,
+                startingPrice: parseInt(document.getElementById('startingPrice').value),
+                currentPrice: parseInt(document.getElementById('startingPrice').value),
+                images: selectedImages,
+                bids: [],
+                createdAt: new Date().toISOString(),
+                bidEndTime: endTime.toISOString(),
+                seller: currentUser
+            };
+
+            cars.push(newCar);
+            localStorage.setItem('miniatureCars', JSON.stringify(cars));
+
+            addCarForm.reset();
+            imagePreview.innerHTML = '';
+            selectedImages = [];
+            adminVisible = false;
+            adminSection.style.display = 'none';
+            toggleAdminBtn.textContent = 'Add New Car';
+
+            renderCars();
+        });
+
+        // Calculate Time Remaining
+        function getTimeRemaining(endTime) {
+            const now = new Date();
+            const end = new Date(endTime);
+            const diff = end - now;
+
+            if (diff <= 0) {
+                return { expired: true, text: 'Bidding Ended' };
+            }
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            return {
+                expired: false,
+                text: `${hours}h ${minutes}m remaining`
+            };
+        }
+
+        // Render Cars
+        function renderCars() {
+            const carsGrid = document.getElementById('carsGrid');
+
+            if (cars.length === 0) {
+                carsGrid.innerHTML = '<div class="no-cars">No cars listed yet. Add your first miniature car!</div>';
+                return;
+            }
+
+            carsGrid.innerHTML = cars.map(car => {
+                const timeRemaining = getTimeRemaining(car.bidEndTime);
+                const isSeller = currentUser && car.seller && currentUser.contact === car.seller.contact;
+                const highestBid = car.bids.length > 0 ? car.bids[car.bids.length - 1] : null;
+
+                return `
+                <div class="car-card">
+                    <img src="${car.images[0] || ''}" alt="${car.name}" class="car-image">
+                    <div class="car-details">
+                        <h3>${car.name}</h3>
+                        <p>${car.description}</p>
+
+                        <div class="bid-timer ${timeRemaining.expired ? 'expired' : ''}">
+                            ${timeRemaining.text}
+                        </div>
+
+                        <div class="price-section">
+                            <div class="current-price">₹${car.currentPrice.toLocaleString('en-IN')}</div>
+                            <div class="bid-count">${car.bids.length} bid(s) placed</div>
+                        </div>
+
+                        ${!timeRemaining.expired ? `
+                            <div class="bid-section">
+                                <input type="number"
+                                       id="bidAmount-${car.id}"
+                                       placeholder="Enter bid (min ₹${car.currentPrice + 1})"
+                                       min="${car.currentPrice + 1}">
+                                <button onclick="placeBid(${car.id})">Place Bid</button>
+                            </div>
+                        ` : ''}
+
+                        ${car.bids.length > 0 ? `
+                            <div class="bid-history">
+                                <h4>Recent Bids:</h4>
+                                ${car.bids.slice(-3).reverse().map(bid => `
+                                    <div class="bid-item">
+                                        ₹${bid.amount.toLocaleString('en-IN')} by ${bid.bidder.name}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        ${isSeller && timeRemaining.expired && highestBid ? `
+                            <div class="winner-section">
+                                <h4>🏆 Winning Bidder Contact Information:</h4>
+                                <div class="bidder-info">
+                                    <p><strong>Name:</strong> ${highestBid.bidder.name}</p>
+                                    <p><strong>Country:</strong> ${highestBid.bidder.country}</p>
+                                    <p><strong>Contact:</strong> ${highestBid.bidder.contact}</p>
+                                    <p><strong>Winning Bid:</strong> ₹${highestBid.amount.toLocaleString('en-IN')}</p>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${isSeller ? `
+                            <button class="delete-btn" onclick="deleteCar(${car.id})">Delete Listing</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        // Place Bid
+        function placeBid(carId) {
+            const car = cars.find(c => c.id === carId);
+            const bidInput = document.getElementById(`bidAmount-${carId}`);
+            const bidAmount = parseInt(bidInput.value);
+
+            // Check if bidding has ended
+            const timeRemaining = getTimeRemaining(car.bidEndTime);
+            if (timeRemaining.expired) {
+                alert('Bidding has ended for this item!');
+                return;
+            }
+
+            if (!bidAmount || bidAmount < car.currentPrice + 1) {
+                alert(`Bid must be at least ₹${car.currentPrice + 1}`);
+                return;
+            }
+
+            car.bids.push({
+                amount: bidAmount,
+                timestamp: new Date().toISOString(),
+                bidder: {
+                    name: currentUser.name,
+                    country: currentUser.country,
+                    contact: currentUser.contact
+                }
+            });
+
+            car.currentPrice = bidAmount;
+
+            localStorage.setItem('miniatureCars', JSON.stringify(cars));
+            bidInput.value = '';
+            renderCars();
+
+            alert('Bid placed successfully!');
+        }
+
+        // Delete Car
+        function deleteCar(carId) {
+            if (confirm('Are you sure you want to delete this listing?')) {
+                cars = cars.filter(c => c.id !== carId);
+                localStorage.setItem('miniatureCars', JSON.stringify(cars));
+                renderCars();
+            }
+        }
+
+        // Initial Render
+        renderCars();
+
+        // Update timers every minute
+        setInterval(function() {
+            renderCars();
+        }, 60000);
+    </script>
+</body>
+</html>
+
